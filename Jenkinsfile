@@ -2,32 +2,23 @@ pipeline {
     agent any
 
     stages {
-        stage('Ortamı Hazırla') {
+        stage('Clone Repo') {
             steps {
-                bat '''
-                    python -m venv venv
-                    venv\\Scripts\\activate
-                    pip install -r requirements.txt
-                '''
+                git 'https://github.com/emreosminho/testAutomation1.git'
             }
         }
 
-        stage('Testleri Çalıştır') {
+        stage('Set up Python Env') {
             steps {
-                bat '''
-                    venv\\Scripts\\activate
-                    pytest tests\\ --html=rapor.html
-                '''
+                sh 'python3 -m venv venv'
+                sh './venv/bin/pip install --upgrade pip'
+                sh './venv/bin/pip install -r requirements.txt'
             }
         }
 
-        stage('Test Raporunu Yayınla') {
+        stage('Run Tests') {
             steps {
-                publishHTML([
-                    reportDir: '.',
-                    reportFiles: 'rapor.html',
-                    reportName: 'Selenium Test Raporu'
-                ])
+                sh './venv/bin/python3 -m pytest tests/ --maxfail=1 --disable-warnings'
             }
         }
     }
